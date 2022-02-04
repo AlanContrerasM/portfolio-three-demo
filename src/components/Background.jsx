@@ -13,11 +13,53 @@ import {
   DirectionalLight,
   FlatShading,
 } from "three";
+import * as dat from 'dat.gui';
 
 const Background = () => {
   const mountDiv = useRef(null);
+  
 
   useEffect(() => {
+    //for our gui controls
+    const gui = new dat.GUI();
+    const world = {
+        plane: {
+            width:5,
+            height:5,
+            widthSegments: 10,
+            heightSegments: 10
+        }
+    }
+    gui.add(world.plane, 'width', 1, 20).
+        onChange(generatePlane);
+    gui.add(world.plane, 'height', 1, 20).
+        onChange(generatePlane);
+    gui.add(world.plane, 'widthSegments', 1, 20).
+        onChange(generatePlane);
+    gui.add(world.plane, 'heightSegments', 1, 20).
+        onChange(generatePlane);
+
+
+
+    function generatePlane(){
+        console.log("new plane")
+        planeMesh.geometry.dispose();
+        planeMesh.geometry = new PlaneGeometry(world.plane.width,
+                                                world.plane.height,
+                                                world.plane.widthSegments,
+                                                world.plane.heightSegments);
+        const {array} =   planeMesh.geometry.attributes.position;
+        for (let i = 0; i < array.length; i+=3) {
+            const x = array[i];
+            const y = array[i+1];
+            const z = array[i+2];
+
+            //let's add randomness to z value
+            array[i+2] = z + Math.random();
+
+        }
+    }
+
     const scene = new Scene();
     //takes four arguments,
     //field of view 75 is default
