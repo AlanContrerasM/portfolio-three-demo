@@ -11,8 +11,9 @@ import {
   DoubleSide,
   MeshPhongMaterial,
   DirectionalLight,
-  FlatShading,
+  FlatShading
 } from "three";
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as dat from 'dat.gui';
 
 const Background = () => {
@@ -87,6 +88,8 @@ const Background = () => {
     // console.log(mountDiv);
     mountDiv.current.appendChild(renderer.domElement);
 
+    //Set Orbit controls
+    const controls = new OrbitControls( camera, renderer.domElement );
 
     //because everything will by default spawn at center, so lets pan out the camera
     camera.position.z = 5;
@@ -112,23 +115,25 @@ const Background = () => {
 
         //let's add randomness to z value
         array[i+2] = z + Math.random();
-
     }
 
     //create an all white light, FFFFFF, and brightest intensity 1
     const light = new DirectionalLight(0xFFFFFF, 1);
-
     //make it so its coming from our direction, x = 0, y = 0, z = 1
     light.position.set(0,0,1);
     scene.add(light);
 
-    // renderer.render(scene, camera)
+    //lets add a light for when we go behind our  object with orbita controls
+    const backLight = new DirectionalLight(0xFFFFFF, 1);
+    //make it so its coming from our direction, x = 0, y = 0, z = 1
+    backLight.position.set(0,0,-1);
+    scene.add(backLight);
 
     //lets make it do funky stuff
     const animate = function () {
       requestAnimationFrame(animate);
-      planeMesh.rotation.x += 0.01;
-      planeMesh.rotation.y += 0.01;
+      // planeMesh.rotation.x += 0.01;
+      // planeMesh.rotation.y += 0.01;
       renderer.render(scene, camera);
     };
 
@@ -141,6 +146,7 @@ const Background = () => {
     window.addEventListener("resize", onWindowResize, false);
 
     animate();
+    // renderer.render(scene, camera);
 
     return () => {
       mountDiv.current.removeChild(renderer.domElement);

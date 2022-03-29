@@ -2,3 +2,5 @@
 2. set up git remote
 3. npm i three dat.gui
 4. add it to whatever component. create a scene and and also add a camera
+5. add Orbit controls. You can also set some extra lights, for when we go around our mesh
+6. add hover effect
