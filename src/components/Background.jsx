@@ -42,7 +42,7 @@ const Background = () => {
 
 
     function generatePlane(){
-        console.log("new plane")
+        // console.log("new plane")
         planeMesh.geometry.dispose();
         planeMesh.geometry = new PlaneGeometry(world.plane.width,
                                                 world.plane.height,
@@ -127,8 +127,8 @@ const Background = () => {
     //lets make it do funky stuff
     const animate = function () {
       requestAnimationFrame(animate);
-    //   planeMesh.rotation.x += 0.01;
-    //   planeMesh.rotation.y += 0.01;
+      planeMesh.rotation.x += 0.01;
+      planeMesh.rotation.y += 0.01;
       renderer.render(scene, camera);
     };
 
