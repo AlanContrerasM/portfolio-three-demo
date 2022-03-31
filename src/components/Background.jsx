@@ -11,10 +11,12 @@ import {
   DoubleSide,
   MeshPhongMaterial,
   DirectionalLight,
-  FlatShading
+  FlatShading,
+  Raycaster
 } from "three";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import * as dat from 'dat.gui';
+import { BufferAttribute } from "three";
 
 const Background = () => {
   const mountDiv = useRef(null);
@@ -61,6 +63,8 @@ const Background = () => {
         }
     }
 
+    //import a raycaster for our hover event
+    const raycaster = new Raycaster();
     const scene = new Scene();
     //takes four arguments,
     //field of view 75 is default
@@ -98,7 +102,13 @@ const Background = () => {
 
     //Let's add a plane, width, height, widthsegments, heightsegments
     const planeGeometry = new PlaneGeometry(5, 5, 10, 10);
-    const planeMaterial = new MeshPhongMaterial({ color: 0x0000aa, side: DoubleSide, flatShading: FlatShading });
+    const planeMaterial = new MeshPhongMaterial({ 
+      // color: 0x0000aa, //if implementing vertexColors delete this
+      side: DoubleSide, 
+      flatShading: FlatShading, 
+      //vertexColors only defined if we are adding mousemove, and setAttibute color
+      vertexColors: true 
+    });
     const planeMesh = new Mesh(planeGeometry, planeMaterial);
     scene.add(planeMesh);
 
@@ -117,6 +127,16 @@ const Background = () => {
         array[i+2] = z + Math.random();
     }
 
+    //only needed for vertexColors and the mousemove hover effect
+    const colors = [];
+    for( let i = 0; i< planeMesh.geometry.attributes.position.count; i++){
+      colors.push(1,0,0); //color blue
+    }
+    //add extra attribute for planeMesh, will be optional for our mousemove, hover
+    planeMesh.geometry.setAttribute('color', 
+      new BufferAttribute(new Float32Array(colors), 3));// basically, we say we are going to pass three values, for color, rgb
+    planeMesh.updateMatrixWorld();
+
     //create an all white light, FFFFFF, and brightest intensity 1
     const light = new DirectionalLight(0xFFFFFF, 1);
     //make it so its coming from our direction, x = 0, y = 0, z = 1
@@ -128,6 +148,12 @@ const Background = () => {
     //make it so its coming from our direction, x = 0, y = 0, z = 1
     backLight.position.set(0,0,-1);
     scene.add(backLight);
+    
+    //this is for the hover mousemove event
+    const mouse = {
+      x: undefined,
+      y: undefined
+    }
 
     //lets make it do funky stuff
     const animate = function () {
@@ -135,7 +161,20 @@ const Background = () => {
       // planeMesh.rotation.x += 0.01;
       // planeMesh.rotation.y += 0.01;
       renderer.render(scene, camera);
+      //for the hover or moveover
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(planeMesh);
+      if(intersects.length > 0){
+        // console.log(intersects[0].object.geometry.attributes.color);
+        const {color} = intersects[0].object.geometry.attributes;
+        color.setX(intersects[0].face.a, 0);
+        color.setX(intersects[0].face.b, 0);
+        color.setX(intersects[0].face.c, 0);
+        color.needsUpdate = true;
+      }
     };
+
+    animate();
 
     let onWindowResize = function () {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -145,8 +184,15 @@ const Background = () => {
 
     window.addEventListener("resize", onWindowResize, false);
 
-    animate();
-    // renderer.render(scene, camera);
+    //Add hover event, this will be used by raycaster inside our animate function
+    
+    window.addEventListener("mousemove", (e)=>{
+      //we need normalized coordinates, meaning 0,0 is the center of the page
+      mouse.x = (e.clientX / innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+    })
+
+
 
     return () => {
       mountDiv.current.removeChild(renderer.domElement);
